@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Single-SPA Root Config</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    .navbar {
+      background-color: #2c3e50;
+      padding: 1rem;
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+    .navbar h1 {
+      color: white;
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    .navbar nav {
+      display: flex;
+      gap: 1rem;
+    }
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    .navbar a:hover {
+      background-color: #34495e;
+    }
+    .navbar a.active {
+      background-color: #3498db;
+    }
+    #single-spa-application {
+      padding: 2rem;
+    }
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h1>Microfrontend Application</h1>
+    <nav>
+      <a href="/" id="home-link">Home</a>
+      <a href="/angular" id="angular-link">Angular App</a>
+      <a href="/react" id="react-link">React MFE</a>
+    </nav>
+  </div>
+  
+  <div id="single-spa-application">
+    <div class="loading">Loading application...</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/system.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/extras/amd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/extras/named-exports.min.js"></script>
+  
+  <script type="systemjs-importmap">
+    {
+      "imports": {
+        "single-spa": "https://cdn.jsdelivr.net/npm/single-spa@5.9.5/lib/system/single-spa.min.js",
+        "@angular-spa/shell": "/dist/angular-spa-app/main-single-spa.js",
+        "@react-mfe/app": "http://localhost:4202/react-mfe.js"
+      }
+    }
+  </script>
+
+  <script>
+    System.import('single-spa').then(({ registerApplication, start }) => {
+      registerApplication({
+        name: '@angular-spa/shell',
+        app: () => System.import('@angular-spa/shell'),
+        activeWhen: (location) => location.pathname === '/' || location.pathname.startsWith('/angular')
+      });
+
+      registerApplication({
+        name: '@react-mfe/app',
+        app: () => System.import('@react-mfe/app'),
+        activeWhen: (location) => location.pathname.startsWith('/react')
+      });
+
+      start();
+
+      // Update active nav link
+      function updateActiveLink() {
+        const links = document.querySelectorAll('.navbar a');
+        links.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === location.pathname) {
+            link.classList.add('active');
+          }
+        });
+      }
+
+      window.addEventListener('single-spa:routing-event', updateActiveLink);
+      updateActiveLink();
+    });
+  </script>
+</body>
+</html>
