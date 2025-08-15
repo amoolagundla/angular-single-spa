@@ -3,7 +3,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const defaultConfig = {
-  mode: process.env.NODE_ENV || 'production',
+  mode: 'development',
   entry: './src/index.tsx',
   output: {
     filename: 'react-mfe.js',
