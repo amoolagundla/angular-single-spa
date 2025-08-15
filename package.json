@@ -13,7 +13,9 @@
     "install:all": "npm install && cd react-mfe && npm install",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "deploy:swa": "npx @azure/static-web-apps-cli deploy ./deployment-files --env production",
+    "prepare:deploy": "rm -rf deployment-files && mkdir deployment-files && cp dist/* deployment-files/ 2>/dev/null || cp -r dist/* deployment-files/"
   },
   "private": true,
   "dependencies": {
