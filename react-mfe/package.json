@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "webpack serve --config webpack.config.js --port 4202",
-    "build": "webpack --config webpack.config.js",
+    "build": "webpack --config webpack.prod.config.js",
     "serve": "serve dist -p 4201 -s"
   },
   "dependencies": {

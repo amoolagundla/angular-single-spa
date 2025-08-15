@@ -1,9 +1,7 @@
-const { merge } = require('webpack-merge');
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-const defaultConfig = {
-  mode: process.env.NODE_ENV || 'production',
+module.exports = {
+  mode: 'production',
   entry: './src/index.tsx',
   output: {
     filename: 'react-mfe.js',
@@ -35,21 +33,5 @@ const defaultConfig = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx']
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: './public/index.html'
-    })
-  ],
-  devServer: {
-    port: 4202,
-    headers: {
-      'Access-Control-Allow-Origin': '*'
-    },
-    hot: true
-  },
-  // Remove externals - bundle React and ReactDOM within the microfrontend
-  // externals: {}
+  }
 };
-
-module.exports = defaultConfig;

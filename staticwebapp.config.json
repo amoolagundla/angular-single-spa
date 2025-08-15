@@ -1,0 +1,35 @@
+{
+  "routes": [
+    {
+      "route": "/react/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/angular/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/*",
+      "rewrite": "/index.html"
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html"
+  },
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/index.html"
+    }
+  },
+  "mimeTypes": {
+    ".js": "application/javascript",
+    ".json": "application/json",
+    ".css": "text/css",
+    ".html": "text/html"
+  },
+  "globalHeaders": {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  }
+}
