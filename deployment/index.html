@@ -168,8 +168,14 @@
   <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/system.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/extras/amd.min.js"></script>
   
-  <!-- Then load Single-SPA -->
-  <script src="https://cdn.jsdelivr.net/npm/single-spa@5.9.5/lib/umd/single-spa.min.js"></script>
+  <!-- Load Single-SPA with multiple fallbacks -->
+  <script src="https://unpkg.com/single-spa@5.9.5/lib/umd/single-spa.min.js"></script>
+  <script>
+    // Fallback if Single-SPA didn't load from unpkg
+    if (typeof window.singleSpa === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/single-spa@5.9.5/lib/umd/single-spa.min.js"><\/script>');
+    }
+  </script>
   
   <script>
     // Debug logging function
@@ -359,11 +365,36 @@
     }
 
     // Wait for all scripts to load
+    function waitForDependencies() {
+      let attempts = 0;
+      const maxAttempts = 20;
+      
+      function checkDependencies() {
+        attempts++;
+        
+        // Check if both SystemJS and Single-SPA are loaded
+        if (typeof System !== 'undefined' && typeof singleSpa !== 'undefined') {
+          console.log('Dependencies loaded after ' + attempts + ' attempts');
+          initializeMicrofrontend();
+        } else if (attempts < maxAttempts) {
+          console.log('Waiting for dependencies... Attempt ' + attempts);
+          if (typeof System === 'undefined') console.log('  - SystemJS not yet loaded');
+          if (typeof singleSpa === 'undefined') console.log('  - Single-SPA not yet loaded');
+          setTimeout(checkDependencies, 200);
+        } else {
+          console.error('Failed to load dependencies after ' + maxAttempts + ' attempts');
+          initializeMicrofrontend(); // Try anyway
+        }
+      }
+      
+      checkDependencies();
+    }
+    
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializeMicrofrontend);
+      document.addEventListener('DOMContentLoaded', waitForDependencies);
     } else {
       // DOM is already loaded
-      setTimeout(initializeMicrofrontend, 100);
+      waitForDependencies();
     }
   </script>
 </body>

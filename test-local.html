@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Local Test</title>
+</head>
+<body>
+    <h1>Testing SystemJS and Single-SPA Loading</h1>
+    <div id="status"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/system.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/extras/amd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/single-spa@5.9.5/lib/umd/single-spa.min.js"></script>
+    
+    <script>
+        const status = document.getElementById('status');
+        
+        setTimeout(() => {
+            const results = {
+                'System exists': typeof System !== 'undefined',
+                'System.import exists': typeof System?.import === 'function',
+                'System.config exists': typeof System?.config === 'function',
+                'singleSpa exists': typeof singleSpa !== 'undefined',
+                'mountRootParcel exists': typeof singleSpa?.mountRootParcel === 'function'
+            };
+            
+            status.innerHTML = '<pre>' + JSON.stringify(results, null, 2) + '</pre>';
+            console.log('Test results:', results);
+        }, 1000);
+    </script>
+</body>
+</html>
