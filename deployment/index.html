@@ -217,10 +217,10 @@
         logStatus('✗ SystemJS not loaded');
       }
       
-      // Check Single-SPA
-      if (typeof singleSpa !== 'undefined') {
+      // Check Single-SPA (note: UMD exports to window.singleSpa)
+      if (typeof window.singleSpa !== 'undefined') {
         logStatus('✓ Single-SPA loaded');
-        if (typeof singleSpa.mountRootParcel === 'function') {
+        if (typeof window.singleSpa.mountRootParcel === 'function') {
           logStatus('✓ mountRootParcel available');
         }
       } else {
@@ -299,7 +299,7 @@
             return;
           }
           
-          if (typeof singleSpa === 'undefined' || typeof singleSpa.mountRootParcel !== 'function') {
+          if (typeof window.singleSpa === 'undefined' || typeof window.singleSpa.mountRootParcel !== 'function') {
             container.innerHTML = '<div class="error">Single-SPA not available</div>';
             return;
           }
@@ -329,7 +329,7 @@
           };
           
           // Mount the parcel
-          const parcel = singleSpa.mountRootParcel(parcelConfig, {
+          const parcel = window.singleSpa.mountRootParcel(parcelConfig, {
             domElement: container,
             name: '@react-mfe/' + containerId
           });
@@ -373,13 +373,13 @@
         attempts++;
         
         // Check if both SystemJS and Single-SPA are loaded
-        if (typeof System !== 'undefined' && typeof singleSpa !== 'undefined') {
+        if (typeof System !== 'undefined' && typeof window.singleSpa !== 'undefined') {
           console.log('Dependencies loaded after ' + attempts + ' attempts');
           initializeMicrofrontend();
         } else if (attempts < maxAttempts) {
           console.log('Waiting for dependencies... Attempt ' + attempts);
           if (typeof System === 'undefined') console.log('  - SystemJS not yet loaded');
-          if (typeof singleSpa === 'undefined') console.log('  - Single-SPA not yet loaded');
+          if (typeof window.singleSpa === 'undefined') console.log('  - Single-SPA not yet loaded');
           setTimeout(checkDependencies, 200);
         } else {
           console.error('Failed to load dependencies after ' + maxAttempts + ' attempts');
