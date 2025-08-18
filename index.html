@@ -62,6 +62,7 @@
     <div class="loading">Loading application...</div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/zone.js@0.15.0/dist/zone.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/system.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/extras/amd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/extras/named-exports.min.js"></script>
@@ -78,15 +79,21 @@
 
   <script>
     System.import('single-spa').then(({ registerApplication, start, mountRootParcel }) => {
-      // Register Angular as the main application (always active)
+      // Register Angular for home and /angular routes
       registerApplication({
         name: '@angular-spa/shell',
         app: () => System.import('@angular-spa/shell'),
-        activeWhen: () => true // Always active since we're handling MFE loading in tabs
+        activeWhen: location => {
+          return location.pathname === '/' || location.pathname.startsWith('/angular');
+        }
       });
 
-      // Don't register React as a route-based app anymore
-      // It will be loaded as a parcel through the Angular component
+      // Register React MFE for /react route
+      registerApplication({
+        name: '@react-mfe/app',
+        app: () => System.import('@react-mfe/app'),
+        activeWhen: location => location.pathname.startsWith('/react')
+      });
       
       // Expose mountRootParcel globally for Angular to use
       window.mountRootParcel = mountRootParcel;

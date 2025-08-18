@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Angular + React Tabs Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f5f5f5;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 1.5rem;
+      color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+    .container {
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid #e0e0e0;
+      background: white;
+      border-radius: 8px 8px 0 0;
+    }
+    .tab-button {
+      padding: 12px 24px;
+      background: white;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s;
+      position: relative;
+    }
+    .tab-button:hover {
+      background: #f8f8f8;
+    }
+    .tab-button.active {
+      background: white;
+      color: #667eea;
+      border-bottom: 2px solid #667eea;
+    }
+    .tab-content {
+      background: white;
+      padding: 30px;
+      border-radius: 0 0 8px 8px;
+      min-height: 400px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+      animation: fadeIn 0.3s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    #react-container, #react-split-container {
+      border: 2px dashed #ccc;
+      border-radius: 4px;
+      padding: 20px;
+      min-height: 300px;
+      background: #f9f9f9;
+    }
+    .split-view {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .split-panel {
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      background: white;
+    }
+    h2 { color: #333; margin-top: 0; }
+    h3 { color: #666; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🚀 Microfrontend Tabs Demo</h1>
+  </div>
+  
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-button active" onclick="showTab('angular')">Angular Content</button>
+      <button class="tab-button" onclick="showTab('react')">React MFE</button>
+      <button class="tab-button" onclick="showTab('both')">Both Together</button>
+    </div>
+    
+    <div class="tab-content">
+      <div id="angular-tab" class="tab-panel active">
+        <h2>Angular Application Content</h2>
+        <p>This is the Angular shell application running standalone.</p>
+        <div style="padding: 20px; background: #f0f0f0; border-radius: 4px; margin-top: 20px;">
+          <h3>Features:</h3>
+          <ul>
+            <li>Standalone Angular 19 application</li>
+            <li>Tab-based navigation without routing</li>
+            <li>Dynamic React MFE loading</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div id="react-tab" class="tab-panel">
+        <h2>React Microfrontend</h2>
+        <p>The React application will be loaded here dynamically.</p>
+        <div id="react-container"></div>
+      </div>
+      
+      <div id="both-tab" class="tab-panel">
+        <h2>Both Applications Together</h2>
+        <div class="split-view">
+          <div class="split-panel">
+            <h3>Angular Content</h3>
+            <p>Angular shell content</p>
+            <ul>
+              <li>Component-based architecture</li>
+              <li>TypeScript support</li>
+              <li>Reactive programming with RxJS</li>
+            </ul>
+          </div>
+          <div class="split-panel">
+            <h3>React MFE</h3>
+            <div id="react-split-container"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load Single-SPA and SystemJS -->
+  <script src="https://cdn.jsdelivr.net/npm/single-spa@5.9.5/lib/umd/single-spa.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/system.min.js"></script>
+  
+  <script>
+    // Configure SystemJS
+    System.config({
+      map: {
+        '@react-mfe/app': 'http://localhost:4202/react-mfe.js'
+      }
+    });
+
+    let activeTab = 'angular';
+    let reactParcel = null;
+    let reactSplitParcel = null;
+
+    function showTab(tab) {
+      // Update active tab
+      activeTab = tab;
+      
+      // Update button states
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Update panel visibility
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.remove('active');
+      });
+      document.getElementById(tab + '-tab').classList.add('active');
+      
+      // Clean up existing parcels
+      if (reactParcel && tab !== 'react') {
+        reactParcel.unmount();
+        reactParcel = null;
+      }
+      if (reactSplitParcel && tab !== 'both') {
+        reactSplitParcel.unmount();
+        reactSplitParcel = null;
+      }
+      
+      // Mount React parcels as needed
+      if (tab === 'react' && !reactParcel) {
+        mountReactParcel('react-container').then(parcel => {
+          reactParcel = parcel;
+        });
+      } else if (tab === 'both' && !reactSplitParcel) {
+        mountReactParcel('react-split-container').then(parcel => {
+          reactSplitParcel = parcel;
+        });
+      }
+    }
+
+    async function mountReactParcel(containerId) {
+      try {
+        const container = document.getElementById(containerId);
+        if (!container) {
+          console.error('Container not found:', containerId);
+          return;
+        }
+
+        console.log('Loading React MFE...');
+        container.innerHTML = '<div style="text-align: center; padding: 20px;">Loading React application...</div>';
+        
+        // Import the React module
+        const reactModule = await System.import('@react-mfe/app');
+        console.log('React module loaded:', reactModule);
+        
+        // Clear loading message
+        container.innerHTML = '';
+        
+        // Mount the parcel
+        const parcelConfig = {
+          bootstrap: reactModule.bootstrap || (async () => console.log('Bootstrap')),
+          mount: reactModule.mount || (async () => console.log('Mount')),
+          unmount: reactModule.unmount || (async () => console.log('Unmount'))
+        };
+        
+        const parcel = singleSpa.mountRootParcel(parcelConfig, {
+          domElement: container,
+          name: '@react-mfe/' + containerId
+        });
+        
+        await parcel.mountPromise;
+        console.log('React MFE mounted successfully in', containerId);
+        
+        return parcel;
+      } catch (error) {
+        console.error('Failed to mount React MFE:', error);
+        document.getElementById(containerId).innerHTML = 
+          '<div style="color: red; padding: 20px;">Failed to load React MFE. Make sure it\'s running on port 4202.</div>';
+      }
+    }
+
+    // Initialize
+    console.log('Tab-based microfrontend application ready');
+    console.log('React MFE should be running on http://localhost:4202');
+  </script>
+</body>
+</html>

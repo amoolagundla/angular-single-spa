@@ -215,15 +215,35 @@ export class AppComponent implements OnInit, OnDestroy {
 
       console.log(`Mounting React parcel in ${containerId}`);
       
+      // Check if window.System and mountRootParcel are available
+      if (!window.System) {
+        console.error('SystemJS not available');
+        return;
+      }
+      
+      if (!window.mountRootParcel) {
+        console.error('mountRootParcel not available');
+        return;
+      }
+      
       // Import the React MFE module
-      const reactModule = await (window as any).System.import('@react-mfe/app');
+      const reactModule = await window.System.import('@react-mfe/app');
+      console.log('React module loaded:', reactModule);
       
       // Create a parcel config that properly handles lifecycle
       const parcelConfig = {
-        bootstrap: reactModule.bootstrap || (async () => {}),
-        mount: reactModule.mount,
-        unmount: reactModule.unmount,
-        update: reactModule.update || (async () => {})
+        bootstrap: reactModule.bootstrap || (async () => {
+          console.log('React bootstrap');
+        }),
+        mount: reactModule.mount || (async (props: any) => {
+          console.log('React mount', props);
+        }),
+        unmount: reactModule.unmount || (async (props: any) => {
+          console.log('React unmount', props);
+        }),
+        update: reactModule.update || (async (props: any) => {
+          console.log('React update', props);
+        })
       };
       
       const parcel = window.mountRootParcel(parcelConfig, {

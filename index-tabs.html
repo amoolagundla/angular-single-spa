@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Angular with React MFE Tabs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    .header {
+      background-color: #2c3e50;
+      padding: 1rem;
+      color: white;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    #angular-app {
+      padding: 20px;
+    }
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Microfrontend Application with Tabs</h1>
+  </div>
+  
+  <div id="angular-app">
+    <div class="loading">Loading Angular application...</div>
+  </div>
+
+  <!-- Load Zone.js first -->
+  <script src="https://cdn.jsdelivr.net/npm/zone.js@0.15.0/dist/zone.min.js"></script>
+  
+  <!-- Load Angular and dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/@angular/core@19.0.0/bundles/core.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@angular/common@19.0.0/bundles/common.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@angular/platform-browser@19.0.0/bundles/platform-browser.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@angular/platform-browser-dynamic@19.0.0/bundles/platform-browser-dynamic.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@angular/router@19.0.0/bundles/router.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/rxjs@7.8.1/dist/bundles/rxjs.umd.js"></script>
+  
+  <!-- SystemJS -->
+  <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/system.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/extras/amd.min.js"></script>
+  
+  <!-- Single-SPA -->
+  <script src="https://cdn.jsdelivr.net/npm/single-spa@5.9.5/lib/umd/single-spa.min.js"></script>
+  
+  <script>
+    // Configure SystemJS
+    System.config({
+      map: {
+        '@react-mfe/app': 'http://localhost:4202/react-mfe.js'
+      }
+    });
+
+    // Make single-spa functions available globally
+    window.mountRootParcel = singleSpa.mountRootParcel;
+    window.System = System;
+    
+    // Bootstrap Angular application directly
+    window.addEventListener('DOMContentLoaded', () => {
+      // Angular will be bootstrapped here
+      const appContainer = document.getElementById('angular-app');
+      
+      // Create Angular app element
+      const appElement = document.createElement('app-root');
+      appContainer.innerHTML = '';
+      appContainer.appendChild(appElement);
+      
+      // We'll use the Angular component directly without single-spa routing
+      console.log('Ready to bootstrap Angular with tabs');
+    });
+  </script>
+  
+  <!-- Load the Angular component -->
+  <script type="module">
+    import { bootstrapApplication } from '@angular/platform-browser';
+    import { AppComponent } from './src/app/app.component.js';
+    
+    bootstrapApplication(AppComponent, {
+      providers: []
+    }).then(() => {
+      console.log('Angular app bootstrapped');
+    }).catch(err => {
+      console.error('Failed to bootstrap Angular:', err);
+    });
+  </script>
+</body>
+</html>
