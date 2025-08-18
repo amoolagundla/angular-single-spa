@@ -9,6 +9,7 @@
     "start:react": "cd react-mfe && npm start",
     "serve:root": "npx serve . -p 3000 -s",
     "build": "ng build",
+    "build:prod": "ng build --configuration production",
     "build:single-spa": "webpack --config webpack.config.single-spa.js",
     "build:all": "npm run build && cd react-mfe && npm run build",
     "install:all": "npm install && cd react-mfe && npm install",

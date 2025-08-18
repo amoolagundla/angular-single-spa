@@ -29,30 +29,48 @@ jobs:
           node-version: '20'
           
       - name: Install Angular dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
         
       - name: Install React MFE dependencies
-        run: cd react-mfe && npm ci
+        run: cd react-mfe && npm ci --legacy-peer-deps
         
-      - name: Build Angular app
-        run: npm run build
+      - name: Build Angular app (production optimized)
+        run: npm run build -- --configuration production
         
       - name: Build React MFE
         run: cd react-mfe && npm run build
         
-      - name: Copy React dist to main dist
+      - name: Prepare optimized deployment folder
         run: |
-          mkdir -p dist/react-mfe
-          cp -r react-mfe/dist/* dist/react-mfe/
+          # Create clean deployment directory
+          mkdir -p deployment
           
-      - name: Copy index.html to dist
-        run: cp index.html dist/
-        
-      - name: Copy Angular dist files
-        run: cp -r dist/angular-spa-app/* dist/
-        
-      - name: Copy SWA config
-        run: cp staticwebapp.config.json dist/
+          # Copy only essential Angular files
+          if [ -d "dist/angular-spa-app/browser" ]; then
+            cp -r dist/angular-spa-app/browser/* deployment/
+          elif [ -d "dist/angular-spa-app" ]; then
+            cp -r dist/angular-spa-app/* deployment/
+          fi
+          
+          # Copy React MFE
+          mkdir -p deployment/react-mfe
+          cp react-mfe/dist/react-mfe.js deployment/react-mfe/
+          
+          # Copy essential static files
+          cp tabs-only.html deployment/ 2>/dev/null || true
+          cp index.html deployment/ 2>/dev/null || true
+          cp staticwebapp.config.json deployment/
+          
+          # Remove all source maps and unnecessary files
+          find deployment -name "*.map" -type f -delete
+          find deployment -name "*.txt" -type f -delete
+          find deployment -name "*.md" -type f -delete
+          find deployment -name "*.LICENSE.txt" -type f -delete
+          
+          # Show deployment size
+          echo "=== Deployment folder size ==="
+          du -sh deployment/
+          du -sh deployment/* | sort -h
         
       - name: Build And Deploy
         id: builddeploy
@@ -61,10 +79,11 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "/"
+          app_location: "/deployment"  # Use the optimized deployment folder
           api_location: ""
-          output_location: "dist"
+          output_location: ""  # Already built, no output needed
           skip_app_build: true
+          skip_api_build: true
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
