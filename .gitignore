@@ -67,7 +67,7 @@ tmp/
 temp/
 
 # Package manager files
-package-lock.json
+# package-lock.json (needed for npm ci in GitHub Actions)
 yarn.lock
 pnpm-lock.yaml
 

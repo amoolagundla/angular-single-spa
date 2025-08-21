@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CDN Test</title>
+</head>
+<body>
+    <h1>Testing CDN Loading</h1>
+    <div id="status"></div>
+    
+    <script src="https://unpkg.com/single-spa@5.9.5/lib/umd/single-spa.min.js"></script>
+    
+    <script>
+        setTimeout(() => {
+            const status = document.getElementById('status');
+            const result = {
+                'singleSpa loaded': typeof singleSpa !== 'undefined',
+                'mountRootParcel available': typeof singleSpa?.mountRootParcel === 'function'
+            };
+            
+            status.innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            console.log('Single-SPA test:', result);
+            
+            if (!result['singleSpa loaded']) {
+                // Try jsdelivr as fallback
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/single-spa@5.9.5/lib/umd/single-spa.min.js';
+                script.onload = () => {
+                    const result2 = {
+                        'singleSpa loaded (jsdelivr)': typeof singleSpa !== 'undefined',
+                        'mountRootParcel available': typeof singleSpa?.mountRootParcel === 'function'
+                    };
+                    status.innerHTML += '<br>Fallback:<pre>' + JSON.stringify(result2, null, 2) + '</pre>';
+                };
+                document.head.appendChild(script);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

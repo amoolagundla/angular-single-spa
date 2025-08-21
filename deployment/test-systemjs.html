@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SystemJS Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .status {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    .success {
+      background: #d4edda;
+      border-color: #c3e6cb;
+      color: #155724;
+    }
+    .error {
+      background: #f8d7da;
+      border-color: #f5c6cb;
+      color: #721c24;
+    }
+    button {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>SystemJS and Single-SPA Test</h1>
+  
+  <div id="status-container"></div>
+  
+  <h2>Actions:</h2>
+  <button onclick="testSystemJS()">Test SystemJS</button>
+  <button onclick="testSingleSPA()">Test Single-SPA</button>
+  <button onclick="loadReactMFE()">Load React MFE</button>
+  
+  <h2>Console Output:</h2>
+  <pre id="console-output"></pre>
+  
+  <h2>React MFE Container:</h2>
+  <div id="react-container" style="border: 2px dashed #ccc; padding: 20px; min-height: 100px;">
+    React MFE will load here...
+  </div>
+
+  <!-- Load SystemJS -->
+  <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/system.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/extras/amd.min.js"></script>
+  
+  <!-- Load Single-SPA -->
+  <script src="https://cdn.jsdelivr.net/npm/single-spa@5.9.5/lib/umd/single-spa.min.js"></script>
+  
+  <script>
+    const statusContainer = document.getElementById('status-container');
+    const consoleOutput = document.getElementById('console-output');
+    
+    function addStatus(message, isSuccess) {
+      const div = document.createElement('div');
+      div.className = 'status ' + (isSuccess ? 'success' : 'error');
+      div.textContent = message;
+      statusContainer.appendChild(div);
+      
+      // Also log to console output
+      consoleOutput.textContent += message + '\n';
+    }
+    
+    // Check initial loading
+    window.addEventListener('DOMContentLoaded', function() {
+      // Check SystemJS
+      if (window.System) {
+        addStatus('✓ SystemJS loaded successfully', true);
+        addStatus('  - System.constructor.name: ' + window.System.constructor.name, true);
+        addStatus('  - System.config available: ' + (typeof window.System.config === 'function'), true);
+      } else {
+        addStatus('✗ SystemJS not loaded', false);
+      }
+      
+      // Check Single-SPA
+      if (window.singleSpa) {
+        addStatus('✓ Single-SPA loaded successfully', true);
+        addStatus('  - singleSpa.mountRootParcel available: ' + (typeof window.singleSpa.mountRootParcel === 'function'), true);
+      } else {
+        addStatus('✗ Single-SPA not loaded', false);
+      }
+    });
+    
+    function testSystemJS() {
+      consoleOutput.textContent = '';
+      
+      if (!window.System) {
+        addStatus('SystemJS is not available', false);
+        return;
+      }
+      
+      try {
+        // Configure SystemJS
+        window.System.config({
+          map: {
+            '@react-mfe/app': '/react-mfe/react-mfe.js'
+          }
+        });
+        
+        addStatus('SystemJS configured with React MFE mapping', true);
+        
+        // Try to check if module exists
+        addStatus('SystemJS ready to import modules', true);
+      } catch (error) {
+        addStatus('Error configuring SystemJS: ' + error.message, false);
+      }
+    }
+    
+    function testSingleSPA() {
+      consoleOutput.textContent = '';
+      
+      if (!window.singleSpa) {
+        addStatus('Single-SPA is not available', false);
+        return;
+      }
+      
+      try {
+        // Check Single-SPA methods
+        const methods = [
+          'mountRootParcel',
+          'start',
+          'registerApplication',
+          'getAppStatus'
+        ];
+        
+        methods.forEach(method => {
+          if (typeof window.singleSpa[method] === 'function') {
+            addStatus('✓ singleSpa.' + method + ' is available', true);
+          } else {
+            addStatus('✗ singleSpa.' + method + ' is NOT available', false);
+          }
+        });
+      } catch (error) {
+        addStatus('Error testing Single-SPA: ' + error.message, false);
+      }
+    }
+    
+    async function loadReactMFE() {
+      consoleOutput.textContent = '';
+      const container = document.getElementById('react-container');
+      
+      try {
+        // Check dependencies
+        if (!window.System) {
+          container.innerHTML = '<div style="color: red;">SystemJS not available</div>';
+          addStatus('Cannot load React MFE: SystemJS not available', false);
+          return;
+        }
+        
+        if (!window.singleSpa || !window.singleSpa.mountRootParcel) {
+          container.innerHTML = '<div style="color: red;">Single-SPA not available</div>';
+          addStatus('Cannot load React MFE: Single-SPA not available', false);
+          return;
+        }
+        
+        addStatus('Loading React MFE...', true);
+        container.innerHTML = '<div style="text-align: center;">Loading...</div>';
+        
+        // Configure SystemJS if not already done
+        if (!window.System.resolve) {
+          window.System.config({
+            map: {
+              '@react-mfe/app': '/react-mfe/react-mfe.js'
+            }
+          });
+        }
+        
+        // Import the React module
+        const reactModule = await window.System.import('@react-mfe/app');
+        addStatus('React module loaded: ' + JSON.stringify(Object.keys(reactModule || {})), true);
+        
+        // Clear loading message
+        container.innerHTML = '';
+        
+        // Create parcel config
+        const parcelConfig = {
+          bootstrap: reactModule.bootstrap || (async () => {
+            console.log('Bootstrap');
+            addStatus('Bootstrap called', true);
+          }),
+          mount: reactModule.mount || (async () => {
+            console.log('Mount');
+            addStatus('Mount called', true);
+            container.innerHTML = '<div style="color: green;">React MFE Mounted (fallback)</div>';
+          }),
+          unmount: reactModule.unmount || (async () => {
+            console.log('Unmount');
+            addStatus('Unmount called', true);
+          })
+        };
+        
+        // Mount the parcel
+        const parcel = window.singleSpa.mountRootParcel(parcelConfig, {
+          domElement: container,
+          name: '@react-mfe/test'
+        });
+        
+        await parcel.mountPromise;
+        addStatus('✓ React MFE mounted successfully!', true);
+        
+      } catch (error) {
+        addStatus('Failed to load React MFE: ' + error.message, false);
+        console.error('Full error:', error);
+        container.innerHTML = '<div style="color: red;">Failed to load: ' + error.message + '</div>';
+      }
+    }
+  </script>
+</body>
+</html>

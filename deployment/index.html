@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Angular + React Tabs Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f5f5f5;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 1.5rem;
+      color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+    .container {
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid #e0e0e0;
+      background: white;
+      border-radius: 8px 8px 0 0;
+    }
+    .tab-button {
+      padding: 12px 24px;
+      background: white;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s;
+      position: relative;
+    }
+    .tab-button:hover {
+      background: #f8f8f8;
+    }
+    .tab-button.active {
+      background: white;
+      color: #667eea;
+      border-bottom: 2px solid #667eea;
+    }
+    .tab-content {
+      background: white;
+      padding: 30px;
+      border-radius: 0 0 8px 8px;
+      min-height: 400px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+      animation: fadeIn 0.3s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    #react-container, #react-split-container {
+      border: 2px dashed #ccc;
+      border-radius: 4px;
+      padding: 20px;
+      min-height: 300px;
+      background: #f9f9f9;
+    }
+    .split-view {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .split-panel {
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      background: white;
+    }
+    h2 { color: #333; margin-top: 0; }
+    h3 { color: #666; }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+    .error {
+      color: red;
+      padding: 20px;
+      text-align: center;
+    }
+    .status {
+      background: #f0f0f0;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🚀 Microfrontend Tabs Demo</h1>
+  </div>
+  
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-button active" id="angular-btn">Angular Content</button>
+      <button class="tab-button" id="react-btn">React MFE</button>
+      <button class="tab-button" id="both-btn">Both Together</button>
+    </div>
+    
+    <div class="tab-content">
+      <div id="angular-tab" class="tab-panel active">
+        <h2>Angular Application Content</h2>
+        <p>This is the Angular shell application running standalone.</p>
+        <div style="padding: 20px; background: #f0f0f0; border-radius: 4px; margin-top: 20px;">
+          <h3>Features:</h3>
+          <ul>
+            <li>Standalone Angular 19 application</li>
+            <li>Tab-based navigation without routing</li>
+            <li>Dynamic React MFE loading</li>
+          </ul>
+        </div>
+        <div id="angular-status" class="status"></div>
+      </div>
+      
+      <div id="react-tab" class="tab-panel">
+        <h2>React Microfrontend</h2>
+        <p>The React application will be loaded here dynamically.</p>
+        <div id="react-container"></div>
+        <div id="react-status" class="status"></div>
+      </div>
+      
+      <div id="both-tab" class="tab-panel">
+        <h2>Both Applications Together</h2>
+        <div class="split-view">
+          <div class="split-panel">
+            <h3>Angular Content</h3>
+            <p>Angular shell content</p>
+            <ul>
+              <li>Component-based architecture</li>
+              <li>TypeScript support</li>
+              <li>Reactive programming with RxJS</li>
+            </ul>
+          </div>
+          <div class="split-panel">
+            <h3>React MFE</h3>
+            <div id="react-split-container"></div>
+          </div>
+        </div>
+        <div id="both-status" class="status"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load SystemJS first -->
+  <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/system.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/extras/amd.min.js"></script>
+  
+  <!-- Load Single-SPA with multiple fallbacks -->
+  <script src="https://unpkg.com/single-spa@5.9.5/lib/umd/single-spa.min.js"></script>
+  <script>
+    // Fallback if Single-SPA didn't load from unpkg
+    if (typeof window.singleSpa === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/single-spa@5.9.5/lib/umd/single-spa.min.js"><\/script>');
+    }
+  </script>
+  
+  <script>
+    // Debug logging function
+    function logStatus(message) {
+      console.log(message);
+      const statusEl = document.querySelector('.tab-panel.active .status');
+      if (statusEl) {
+        statusEl.innerHTML += message + '<br>';
+      }
+    }
+
+    // Check and configure after scripts load
+    function initializeMicrofrontend() {
+      logStatus('Initializing microfrontend...');
+      
+      // Check SystemJS
+      if (typeof System !== 'undefined') {
+        logStatus('✓ SystemJS loaded');
+        
+        // SystemJS in version 6 uses System.import directly
+        if (typeof System.import === 'function') {
+          logStatus('✓ System.import available');
+          
+          // Configure import map
+          const importMap = {
+            imports: {
+              '@react-mfe/app': '/react-mfe/react-mfe.js'
+            }
+          };
+          
+          // For SystemJS 6, we need to use importmap
+          const script = document.createElement('script');
+          script.type = 'systemjs-importmap';
+          script.innerHTML = JSON.stringify(importMap);
+          document.head.appendChild(script);
+          logStatus('✓ Import map configured');
+        }
+      } else {
+        logStatus('✗ SystemJS not loaded');
+      }
+      
+      // Check Single-SPA (note: UMD exports to window.singleSpa)
+      if (typeof window.singleSpa !== 'undefined') {
+        logStatus('✓ Single-SPA loaded');
+        if (typeof window.singleSpa.mountRootParcel === 'function') {
+          logStatus('✓ mountRootParcel available');
+        }
+      } else {
+        logStatus('✗ Single-SPA not loaded');
+      }
+      
+      setupTabs();
+    }
+
+    // Tab functionality
+    let activeTab = 'angular';
+    let reactParcel = null;
+    let reactSplitParcel = null;
+
+    function setupTabs() {
+      logStatus('Setting up tab handlers...');
+      
+      // Tab switching function
+      window.showTab = function(tab) {
+        logStatus('Switching to tab: ' + tab);
+        
+        // Update active tab
+        activeTab = tab;
+        
+        // Update button states
+        document.querySelectorAll('.tab-button').forEach(function(btn) {
+          btn.classList.remove('active');
+        });
+        
+        // Update active button
+        document.getElementById(tab + '-btn').classList.add('active');
+        
+        // Update panel visibility
+        document.querySelectorAll('.tab-panel').forEach(function(panel) {
+          panel.classList.remove('active');
+        });
+        document.getElementById(tab + '-tab').classList.add('active');
+        
+        // Clean up existing parcels
+        if (reactParcel && tab !== 'react') {
+          reactParcel.unmount().catch(console.error);
+          reactParcel = null;
+        }
+        if (reactSplitParcel && tab !== 'both') {
+          reactSplitParcel.unmount().catch(console.error);
+          reactSplitParcel = null;
+        }
+        
+        // Mount React parcels as needed
+        if (tab === 'react' && !reactParcel) {
+          mountReactParcel('react-container').then(function(parcel) {
+            reactParcel = parcel;
+          }).catch(function(error) {
+            logStatus('Error mounting React: ' + error.message);
+          });
+        } else if (tab === 'both' && !reactSplitParcel) {
+          mountReactParcel('react-split-container').then(function(parcel) {
+            reactSplitParcel = parcel;
+          }).catch(function(error) {
+            logStatus('Error mounting React in split view: ' + error.message);
+          });
+        }
+      };
+
+      // Mount React parcel function
+      async function mountReactParcel(containerId) {
+        try {
+          const container = document.getElementById(containerId);
+          if (!container) {
+            throw new Error('Container not found: ' + containerId);
+          }
+
+          // Check dependencies
+          if (typeof System === 'undefined' || typeof System.import !== 'function') {
+            container.innerHTML = '<div class="error">SystemJS not available or System.import not a function</div>';
+            return;
+          }
+          
+          if (typeof window.singleSpa === 'undefined' || typeof window.singleSpa.mountRootParcel !== 'function') {
+            container.innerHTML = '<div class="error">Single-SPA not available</div>';
+            return;
+          }
+
+          logStatus('Loading React MFE...');
+          container.innerHTML = '<div class="loading">Loading React application...</div>';
+          
+          // Import the React module using System.import
+          const reactModule = await System.import('@react-mfe/app');
+          logStatus('React module loaded');
+          
+          // Clear loading message
+          container.innerHTML = '';
+          
+          // Create parcel config
+          const parcelConfig = {
+            bootstrap: reactModule.bootstrap || (async () => {
+              logStatus('Bootstrap called');
+            }),
+            mount: reactModule.mount || (async () => {
+              logStatus('Mount called');
+              container.innerHTML = '<div style="color: green;">React MFE Mounted (fallback)</div>';
+            }),
+            unmount: reactModule.unmount || (async () => {
+              logStatus('Unmount called');
+            })
+          };
+          
+          // Mount the parcel
+          const parcel = window.singleSpa.mountRootParcel(parcelConfig, {
+            domElement: container,
+            name: '@react-mfe/' + containerId
+          });
+          
+          await parcel.mountPromise;
+          logStatus('✓ React MFE mounted successfully');
+          
+          return parcel;
+        } catch (error) {
+          logStatus('Failed to mount React MFE: ' + error.message);
+          console.error('Full error:', error);
+          const container = document.getElementById(containerId);
+          if (container) {
+            container.innerHTML = '<div class="error">Failed to load React MFE: ' + error.message + '</div>';
+          }
+        }
+      }
+
+      // Set up button click handlers
+      document.getElementById('angular-btn').addEventListener('click', function() {
+        window.showTab('angular');
+      });
+      
+      document.getElementById('react-btn').addEventListener('click', function() {
+        window.showTab('react');
+      });
+      
+      document.getElementById('both-btn').addEventListener('click', function() {
+        window.showTab('both');
+      });
+
+      logStatus('✓ Tab handlers initialized');
+    }
+
+    // Wait for all scripts to load
+    function waitForDependencies() {
+      let attempts = 0;
+      const maxAttempts = 20;
+      
+      function checkDependencies() {
+        attempts++;
+        
+        // Check if both SystemJS and Single-SPA are loaded
+        if (typeof System !== 'undefined' && typeof window.singleSpa !== 'undefined') {
+          console.log('Dependencies loaded after ' + attempts + ' attempts');
+          initializeMicrofrontend();
+        } else if (attempts < maxAttempts) {
+          console.log('Waiting for dependencies... Attempt ' + attempts);
+          if (typeof System === 'undefined') console.log('  - SystemJS not yet loaded');
+          if (typeof window.singleSpa === 'undefined') console.log('  - Single-SPA not yet loaded');
+          setTimeout(checkDependencies, 200);
+        } else {
+          console.error('Failed to load dependencies after ' + maxAttempts + ' attempts');
+          initializeMicrofrontend(); // Try anyway
+        }
+      }
+      
+      checkDependencies();
+    }
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', waitForDependencies);
+    } else {
+      // DOM is already loaded
+      waitForDependencies();
+    }
+  </script>
+</body>
+</html>

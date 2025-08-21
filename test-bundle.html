@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Bundle</title>
+  <script src="https://cdn.jsdelivr.net/npm/zone.js@0.15.0/dist/zone.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/system.min.js"></script>
+</head>
+<body>
+  <h1>Testing Angular Bundle</h1>
+  <div id="result"></div>
+  
+  <script>
+    System.import('/dist/angular-spa-app/main-single-spa.js').then(module => {
+      console.log('Module loaded:', module);
+      document.getElementById('result').innerHTML = `
+        <pre>
+Module keys: ${Object.keys(module).join(', ')}
+Has bootstrap: ${typeof module.bootstrap}
+Has mount: ${typeof module.mount}
+Has unmount: ${typeof module.unmount}
+        </pre>
+      `;
+    }).catch(err => {
+      console.error('Error loading module:', err);
+      document.getElementById('result').innerHTML = 'Error: ' + err.message;
+    });
+  </script>
+</body>
+</html>
