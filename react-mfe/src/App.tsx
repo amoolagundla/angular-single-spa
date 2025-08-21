@@ -76,8 +76,8 @@ const App: React.FC = () => {
         <ul>
           <li>React 18</li>
           <li>TypeScript</li>
-          <li>Single-SPA React</li>
-          <li>Webpack Module Federation</li>
+          <li>Module Federation</li>
+          <li>Integrated with Angular Shell</li>
         </ul>
       </div>
     </div>

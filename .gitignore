@@ -114,7 +114,7 @@ out/
 
 # Gatsby files
 .cache/
-# public/ - commented to allow react-mfe/public folder
+public/
 
 # VuePress
 .vuepress/dist
