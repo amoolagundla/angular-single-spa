@@ -1,6 +1,4 @@
- https://jolly-wave-0ac63d010-preview.centralus.1.azurestaticapps.net
-
- https://jolly-wave-0ac63d010-preview.centralus.1.azurestaticapps.net/
+ https://jolly-wave-0ac63d010.1.azurestaticapps.net/
 
 # Angular Single-SPA Application with React Microfrontend
 
