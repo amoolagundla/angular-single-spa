@@ -1,3 +1,5 @@
+ https://jolly-wave-0ac63d010-preview.centralus.1.azurestaticapps.net
+
 # Angular Single-SPA Application with React Microfrontend
 
 This project demonstrates a microfrontend architecture using Single-SPA framework with an Angular shell application and a React microfrontend.
