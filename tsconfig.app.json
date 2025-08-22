@@ -4,6 +4,20 @@
     "outDir": "./out-tsc/app",
     "types": []
   },
-  "files": ["src/main.ts", "src/main.single-spa.ts", "src/polyfills.ts", "src/main-standalone.ts", "src/main-simple.ts"],
-  "include": ["src/**/*.d.ts", "src/**/*.ts"]
+  "files": ["src/main.ts"],
+  "include": [
+    "src/**/*.d.ts",
+    "src/app/**/*.ts",
+    "src/environments/**/*.ts"
+  ],
+  "exclude": [
+    "src/single-spa-config.ts",
+    "src/main.single-spa-wrapper.ts",
+    "src/main.single-spa.ts",
+    "src/main-standalone.ts",
+    "src/main-simple.ts",
+    "src/polyfills.ts",
+    "src/app/react-web-component/**",
+    "src/single-spa-root-config.ts"
+  ]
 }
