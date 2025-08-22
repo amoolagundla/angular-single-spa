@@ -1,73 +1,49 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
-
-declare global {
-  interface Window {
-    mountRootParcel: any;
-    System: any;
-  }
-}
+import { SingleSpaWrapperComponent } from './single-spa-wrapper/single-spa-wrapper.component';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [CommonModule, SingleSpaWrapperComponent],
   template: `
     <div class="container">
-      <h1>Angular Single-SPA Application</h1>
+      <h1>Angular Shell with Micro Frontends</h1>
       
-      <!-- Tab Navigation -->
-      <div class="tab-container">
-        <div class="tab-nav">
+      <div class="tabs">
+        <div class="tab-list">
           <button 
             class="tab-button" 
-            [class.active]="activeTab === 'angular'"
-            (click)="switchTab('angular')">
+            [class.active]="selectedTab === 0"
+            (click)="selectTab(0)">
             Angular Content
           </button>
           <button 
             class="tab-button" 
-            [class.active]="activeTab === 'react'"
-            (click)="switchTab('react')">
-            React MFE
-          </button>
-          <button 
-            class="tab-button" 
-            [class.active]="activeTab === 'both'"
-            (click)="switchTab('both')">
-            Both Together
+            [class.active]="selectedTab === 1"
+            (click)="selectTab(1)">
+            React MFE (Single-SPA)
           </button>
         </div>
         
-        <!-- Tab Content -->
-        <div class="tab-content">
-          <!-- Angular Content Tab -->
-          <div *ngIf="activeTab === 'angular'" class="tab-panel">
-            <h2>Angular Application Content</h2>
-            <p>This is the Angular application running in standalone mode.</p>
-            <router-outlet></router-outlet>
-          </div>
-          
-          <!-- React MFE Tab -->
-          <div *ngIf="activeTab === 'react'" class="tab-panel">
-            <h2>React Microfrontend</h2>
-            <div id="react-parcel-container" #reactContainer></div>
-          </div>
-          
-          <!-- Both Together Tab -->
-          <div *ngIf="activeTab === 'both'" class="tab-panel">
-            <div class="split-view">
-              <div class="split-left">
-                <h3>Angular App</h3>
-                <router-outlet name="split"></router-outlet>
-                <p>Angular content here</p>
-              </div>
-              <div class="split-right">
-                <h3>React MFE</h3>
-                <div id="react-parcel-split" #reactSplitContainer></div>
-              </div>
+        <div class="tab-panels">
+          <div class="tab-panel" [hidden]="selectedTab !== 0">
+            <h2>Welcome to Angular Shell</h2>
+            <p>This is the main Angular application serving as a shell for micro frontends.</p>
+            <div class="feature-list">
+              <h3>Features:</h3>
+              <ul>
+                <li>Angular 19 Application</li>
+                <li>Micro Frontend Architecture</li>
+                <li>React Integration via iframe</li>
+                <li>Dynamic MFE Loading</li>
+              </ul>
             </div>
+          </div>
+          
+          <div class="tab-panel" [hidden]="selectedTab !== 1">
+            <app-single-spa-wrapper></app-single-spa-wrapper>
           </div>
         </div>
       </div>
@@ -77,205 +53,99 @@ declare global {
     .container {
       padding: 20px;
       font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
     }
     
-    .tab-container {
+    h1 {
+      color: #3f51b5;
+      margin-bottom: 30px;
+    }
+    
+    .tab-content {
+      padding: 20px;
+      min-height: 400px;
+    }
+    
+    .feature-list {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #f5f5f5;
+      border-radius: 8px;
+    }
+    
+    .feature-list h3 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    
+    .feature-list ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    
+    .feature-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .feature-list li:last-child {
+      border-bottom: none;
+    }
+    
+    .tabs {
       margin-top: 20px;
     }
     
-    .tab-nav {
+    .tab-list {
       display: flex;
-      gap: 0;
       border-bottom: 2px solid #e0e0e0;
+      margin-bottom: 0;
     }
     
     .tab-button {
       padding: 12px 24px;
-      background: #f5f5f5;
+      background: none;
       border: none;
-      border-top: 2px solid transparent;
+      border-bottom: 3px solid transparent;
       cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
+      font-size: 16px;
+      color: #666;
       transition: all 0.3s ease;
-      position: relative;
+      margin-right: 8px;
     }
     
     .tab-button:hover {
-      background: #e8e8e8;
+      background-color: #f5f5f5;
     }
     
     .tab-button.active {
-      background: white;
-      border-top: 2px solid #007bff;
-      color: #007bff;
+      color: #3f51b5;
+      border-bottom-color: #3f51b5;
+      font-weight: 500;
     }
     
-    .tab-button.active::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      right: 0;
-      height: 2px;
+    .tab-panels {
       background: white;
-    }
-    
-    .tab-content {
-      background: white;
-      border: 1px solid #e0e0e0;
-      border-top: none;
+      border-radius: 0 0 8px 8px;
       min-height: 400px;
     }
     
     .tab-panel {
       padding: 20px;
-      animation: fadeIn 0.3s ease;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    .split-view {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      height: 100%;
-    }
-    
-    .split-left, .split-right {
-      padding: 15px;
-      border: 1px solid #e0e0e0;
-      border-radius: 4px;
-      background: #fafafa;
-    }
-    
-    .split-left h3, .split-right h3 {
-      margin-top: 0;
-      color: #333;
-      border-bottom: 1px solid #e0e0e0;
-      padding-bottom: 10px;
-    }
-    
-    #react-parcel-container, #react-parcel-split {
-      min-height: 300px;
-      padding: 20px;
-      border: 2px dashed #ccc;
-      border-radius: 4px;
-      background: #f9f9f9;
-    }
-    
-    h2 {
-      color: #333;
-      margin-top: 0;
     }
   `]
 })
-export class AppComponent implements OnInit, OnDestroy {
-  title = 'angular-spa-app';
-  activeTab: 'angular' | 'react' | 'both' = 'angular';
-  private reactParcel: any = null;
-  private reactSplitParcel: any = null;
+export class AppComponent implements OnInit {
+  title = 'angular-shell';
+  selectedTab = 0;
 
   ngOnInit() {
-    console.log('Angular App Component initialized');
+    // Set React MFE URL globally for components that need it
+    (window as any).reactMfeUrl = environment.reactMfeUrl;
   }
 
-  ngOnDestroy() {
-    this.unmountReactParcels();
-  }
-
-  async switchTab(tab: 'angular' | 'react' | 'both') {
-    console.log(`Switching to tab: ${tab}`);
-    
-    // Unmount existing parcels before switching
-    this.unmountReactParcels();
-    
-    this.activeTab = tab;
-    
-    // Mount React parcels after a brief delay to ensure DOM is ready
-    setTimeout(async () => {
-      if (tab === 'react') {
-        await this.mountReactParcel('react-parcel-container');
-      } else if (tab === 'both') {
-        await this.mountReactParcel('react-parcel-split');
-      }
-    }, 100);
-  }
-
-  private async mountReactParcel(containerId: string) {
-    try {
-      const container = document.getElementById(containerId);
-      if (!container) {
-        console.error(`Container ${containerId} not found`);
-        return;
-      }
-
-      console.log(`Mounting React parcel in ${containerId}`);
-      
-      // Check if window.System and mountRootParcel are available
-      if (!window.System) {
-        console.error('SystemJS not available');
-        return;
-      }
-      
-      if (!window.mountRootParcel) {
-        console.error('mountRootParcel not available');
-        return;
-      }
-      
-      // Import the React MFE module
-      const reactModule = await window.System.import('@react-mfe/app');
-      console.log('React module loaded:', reactModule);
-      
-      // Create a parcel config that properly handles lifecycle
-      const parcelConfig = {
-        bootstrap: reactModule.bootstrap || (async () => {
-          console.log('React bootstrap');
-        }),
-        mount: reactModule.mount || (async (props: any) => {
-          console.log('React mount', props);
-        }),
-        unmount: reactModule.unmount || (async (props: any) => {
-          console.log('React unmount', props);
-        }),
-        update: reactModule.update || (async (props: any) => {
-          console.log('React update', props);
-        })
-      };
-      
-      const parcel = window.mountRootParcel(parcelConfig, {
-        domElement: container,
-        name: '@react-mfe/parcel-' + containerId
-      });
-      
-      // Store reference for cleanup
-      if (containerId === 'react-parcel-container') {
-        this.reactParcel = parcel;
-      } else {
-        this.reactSplitParcel = parcel;
-      }
-      
-      console.log(`React parcel mounted successfully in ${containerId}`);
-      
-    } catch (error) {
-      console.error('Error mounting React parcel:', error);
-    }
-  }
-
-  private unmountReactParcels() {
-    if (this.reactParcel) {
-      console.log('Unmounting React parcel');
-      this.reactParcel.unmount();
-      this.reactParcel = null;
-    }
-    
-    if (this.reactSplitParcel) {
-      console.log('Unmounting React split parcel');
-      this.reactSplitParcel.unmount();
-      this.reactSplitParcel = null;
-    }
+  selectTab(index: number) {
+    this.selectedTab = index;
   }
 }
