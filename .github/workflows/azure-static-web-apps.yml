@@ -44,14 +44,14 @@ jobs:
           npm run build -- --configuration production
           
           echo "Copying React MFE to Angular dist..."
-          mkdir -p dist/angular-single-spa/react-mfe
-          cp -r react-mfe/dist/* dist/angular-single-spa/react-mfe/
+          mkdir -p dist/angular-spa-app/react-mfe
+          cp -r react-mfe/dist/* dist/angular-spa-app/react-mfe/
           
           echo "Copying staticwebapp.config.json..."
-          cp staticwebapp.config.json dist/angular-single-spa/ || echo "No staticwebapp.config.json found"
+          cp staticwebapp.config.json dist/angular-spa-app/ || echo "No staticwebapp.config.json found"
           
           echo "Build complete!"
-          ls -la dist/angular-single-spa/
+          ls -la dist/angular-spa-app/
         
       - name: Build And Deploy
         id: builddeploy
@@ -60,7 +60,7 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_JOLLY_WAVE_0AC63D010 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "/dist/angular-single-spa"  # Use the built dist folder
+          app_location: "/dist/angular-spa-app"  # Use the built dist folder
           api_location: ""
           output_location: ""  # Already built, no output needed
           skip_app_build: true
