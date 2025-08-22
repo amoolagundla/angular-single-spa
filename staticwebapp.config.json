@@ -1,41 +1,26 @@
 {
   "routes": [
     {
-      "route": "/*.js",
+      "route": "/react-mfe/*.js",
       "headers": {
-        "Content-Type": "application/javascript",
-        "Cache-Control": "public, max-age=31536000"
+        "content-type": "application/javascript"
       }
     },
     {
-      "route": "/*.css",
+      "route": "/react-mfe/*.css",
       "headers": {
-        "Content-Type": "text/css",
-        "Cache-Control": "public, max-age=31536000"
+        "content-type": "text/css"
       }
-    },
-    {
-      "route": "/react",
-      "rewrite": "/index.html"
-    },
-    {
-      "route": "/angular",
-      "rewrite": "/index.html"
-    },
-    {
-      "route": "/",
-      "rewrite": "/index.html"
     }
   ],
-  "mimeTypes": {
-    ".js": "application/javascript",
-    ".json": "application/json",
-    ".css": "text/css",
-    ".html": "text/html"
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/react-mfe/*.js", "/react-mfe/*.css", "/react-mfe/*.json"]
   },
-  "globalHeaders": {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
+  "mimeTypes": {
+    ".json": "application/json",
+    ".js": "application/javascript",
+    ".mjs": "application/javascript",
+    ".css": "text/css"
   }
 }

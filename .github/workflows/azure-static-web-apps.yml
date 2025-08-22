@@ -28,18 +28,30 @@ jobs:
         with:
           node-version: '20'
           
-      # Use the pre-committed deployment folder with tab-based interface
-      - name: Verify deployment folder
+      - name: Install dependencies
         run: |
-          echo "=== Using pre-committed deployment folder ==="
-          echo "Deployment folder contents:"
-          ls -la deployment/
-          echo ""
-          echo "React MFE contents:"
-          ls -la deployment/react-mfe/ || echo "React MFE folder not found"
-          echo ""
-          echo "Total deployment size:"
-          du -sh deployment/
+          npm ci
+          cd react-mfe && npm ci && cd ..
+          
+      - name: Build Angular and React apps
+        run: |
+          echo "Building React MFE..."
+          cd react-mfe
+          NODE_ENV=production npm run build
+          cd ..
+          
+          echo "Building Angular app..."
+          npm run build -- --configuration production
+          
+          echo "Copying React MFE to Angular dist..."
+          mkdir -p dist/angular-single-spa/react-mfe
+          cp -r react-mfe/dist/* dist/angular-single-spa/react-mfe/
+          
+          echo "Copying staticwebapp.config.json..."
+          cp staticwebapp.config.json dist/angular-single-spa/ || echo "No staticwebapp.config.json found"
+          
+          echo "Build complete!"
+          ls -la dist/angular-single-spa/
         
       - name: Build And Deploy
         id: builddeploy
@@ -48,7 +60,7 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_JOLLY_WAVE_0AC63D010 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "/deployment"  # Use the pre-committed deployment folder
+          app_location: "/dist/angular-single-spa"  # Use the built dist folder
           api_location: ""
           output_location: ""  # Already built, no output needed
           skip_app_build: true
