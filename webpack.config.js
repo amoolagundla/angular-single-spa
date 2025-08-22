@@ -1,14 +1,19 @@
-const { shareAll, withModuleFederationPlugin } = require('@angular-architects/module-federation/webpack');
+const singleSpaAngularWebpack = require('single-spa-angular/lib/webpack').default;
 const path = require('path');
 
 module.exports = (config, options) => {
-  // Basic webpack config without Module Federation for now
-  // We'll use dynamic loading instead
-  config.output = {
-    ...config.output,
-    uniqueName: 'angularShell',
-    publicPath: 'auto'
+  const singleSpaWebpackConfig = singleSpaAngularWebpack(config, options);
+
+  singleSpaWebpackConfig.output = {
+    ...singleSpaWebpackConfig.output,
+    filename: 'main-single-spa.js',
+    libraryTarget: 'system',
+    path: path.resolve(__dirname, 'dist/angular-spa-app')
   };
 
-  return config;
+  singleSpaWebpackConfig.externals = [
+    'zone.js',
+  ];
+
+  return singleSpaWebpackConfig;
 };

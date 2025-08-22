@@ -1,20 +1,15 @@
-// const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin');
+const { merge } = require('webpack-merge');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const defaultConfig = {
   mode: 'development',
-  entry: {
-    main: './src/index.tsx',
-    'react-single-spa': './src/single-spa-entry.tsx'
-  },
+  entry: './src/index.tsx',
   output: {
-    filename: '[name].js',
+    filename: 'react-mfe.js',
     path: path.resolve(__dirname, 'dist'),
-    publicPath: 'http://localhost:4202/',
-    clean: true,
-    libraryTarget: 'umd',
-    library: '[name]'
+    libraryTarget: 'system',
+    clean: true
   },
   module: {
     rules: [
@@ -42,18 +37,6 @@ const defaultConfig = {
     extensions: ['.tsx', '.ts', '.js', '.jsx']
   },
   plugins: [
-    // Module Federation disabled for now - using direct UMD loading
-    // new ModuleFederationPlugin({
-    //   name: 'reactMfe',
-    //   filename: 'remoteEntry.js',
-    //   exposes: {
-    //     './App': './src/bootstrap'
-    //   },
-    //   shared: {
-    //     'react': { singleton: true },
-    //     'react-dom': { singleton: true }
-    //   }
-    // }),
     new HtmlWebpackPlugin({
       template: './public/index.html'
     })
@@ -64,7 +47,9 @@ const defaultConfig = {
       'Access-Control-Allow-Origin': '*'
     },
     hot: true
-  }
+  },
+  // Remove externals - bundle React and ReactDOM within the microfrontend
+  // externals: {}
 };
 
 module.exports = defaultConfig;
