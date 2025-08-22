@@ -41,7 +41,7 @@ jobs:
           cd ..
           
           echo "Building Angular app..."
-          ng build --configuration production
+          npx ng build --configuration production
           
           echo "Copying React MFE to Angular dist..."
           mkdir -p dist/angular-spa-app/react-mfe
